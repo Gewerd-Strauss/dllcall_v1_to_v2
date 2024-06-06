@@ -1,10 +1,10 @@
-; #region:GetStdStreams_WithInput (685341990)
+; #region:GetStdStreams_WithInputv2 (1696729278)
 
 ; #region:Metadata:
-; Snippet: GetStdStreams_WithInput;  (v.1.1.3)
-;  09 Oktober 2023
+; Snippet: GetStdStreams_WithInputv2;  (v.2.1.3)
+;  06 Juni 2024
 ; --------------------------------------------------------------
-; Author: u/anonymous1184, translated by Gewerd Strauss
+; Author: u/anonymous1184, Gewerd Strauss
 ; License: none
 ; --------------------------------------------------------------
 ; Library: Personal Library
@@ -17,38 +17,37 @@
 
 
 ; #region:Description:
-; Executes a command line input in Directory 'WorkDir', returns the command line output via the byRef variable 'InOut'
+; Executes a command line input in Directory 'WorkDir', returns the command line output via the byRef variable 'InOut'.
+; Original V1-Code by u/anonymous1184, updated to V2 by Gewerd Strauss
 ; #endregion:Description
 
 ; #region:Example
-if GetStdStreams_WithInput(A_ComSpec " /C ping 127.0.0.1 -n 9", , &io) {
-    MsgBox(io)
-} else {
-    MsgBox("command failed")
-}
-;
+; GetStdStreams_WithInputv2("python --version", , &r)
+; MsgBox r
+; if GetStdStreams_WithInputv2(A_ComSpec " /C ping 127.0.0.1 -n 9", , &io) {
+;     MsgBox(io)
+; } else {
+;     MsgBox("command failed")
+; }
 ; #endregion:Example
 
 
 ; #region:Code
-GetStdStreams_WithInput(CommandLine, WorkDir := "", &InOut := "") {
+GetStdStreams_WithInputv2(CommandLine, WorkDir := "", &InOut := "") {
     static HANDLE_FLAG_INHERIT := 0x00000001, PIPE_NOWAIT := 0x00000001, STARTF_USESTDHANDLES := 0x0100, CREATE_NO_WINDOW := 0x08000000, HIGH_PRIORITY_CLASS := 0x00000080
     DllCall("CreatePipe", "Ptr*", &hInputR := 0, "Ptr*", &hInputW := 0, "Ptr", 0, "UInt", 0)
     DllCall("CreatePipe", "Ptr*", &hOutputR := 0, "Ptr*", &hOutputW := 0, "Ptr", 0, "UInt", 0)
     DllCall("SetHandleInformation", "Ptr", hInputR, "UInt", HANDLE_FLAG_INHERIT, "UInt", HANDLE_FLAG_INHERIT)
     DllCall("SetHandleInformation", "Ptr", hOutputW, "UInt", HANDLE_FLAG_INHERIT, "UInt", HANDLE_FLAG_INHERIT)
-    ; v1->v2-conversion error: DllCall("SetNamedPipeHandleState", "Ptr", hOutputR, "Ptr", PIPE_NOWAIT, "Ptr", 0, "Ptr", 0)
     DllCall("SetNamedPipeHandleState", "Ptr", hOutputR, "uint*", &lpMode := 1, "Ptr", 0, "Ptr", 0)
     processInformation := Buffer(A_PtrSize = 4 ? 16 : 24, 0) ; PROCESS_INFORMATION ; V1toV2: if 'processInformation' is a UTF-16 string, use 'VarSetStrCapacity(&processInformation, A_PtrSize = 4 ? 16 : 24)'
     cb := startupInfo := Buffer(A_PtrSize = 4 ? 68 : 104, 0) ; STARTUPINFO ; V1toV2: if 'startupInfo' is a UTF-16 string, use 'VarSetStrCapacity(&startupInfo, A_PtrSize = 4 ? 68 : 104)'
-    ; v1->v2-conversion error: NumPut("UInt", cb, startupInfo, 0)
     NumPut("UInt", cb.Size, startupInfo, 0)
     NumPut("UInt", STARTF_USESTDHANDLES, startupInfo, A_PtrSize = 4 ? 44 : 60)
     NumPut("Ptr", hInputR, startupInfo, A_PtrSize = 4 ? 56 : 80)
     NumPut("Ptr", hOutputW, startupInfo, A_PtrSize = 4 ? 60 : 88)
     NumPut("Ptr", hOutputW, startupInfo, A_PtrSize = 4 ? 64 : 96)
     pWorkDir := IsSet(WorkDir) && WorkDir ? &WorkDir : 0
-    ; v1->v2-conversion error: created := DllCall("CreateProcess", "Ptr", 0, "Ptr", CommandLine, "Ptr", 0, "Ptr", 0, "Int", true, "UInt", CREATE_NO_WINDOW | HIGH_PRIORITY_CLASS, "Ptr", 0, "Ptr", pWorkDir, "Ptr", startupInfo, "Ptr", processInformation)
     created := DllCall("CreateProcess", "Ptr", 0, "WStr", CommandLine, "Ptr", 0, "Ptr", 0, "Int", true, "UInt", CREATE_NO_WINDOW | HIGH_PRIORITY_CLASS, "Ptr", 0, "Ptr", pWorkDir, "Ptr", startupInfo, "Ptr", processInformation)
     lastError := A_LastError
     DllCall("CloseHandle", "Ptr", hInputR)
@@ -83,8 +82,7 @@ GetStdStreams_WithInput(CommandLine, WorkDir := "", &InOut := "") {
     DllCall("CloseHandle", "Ptr", hThread)
     return exitCode
 }
-
 ; #endregion:Code
 
 
-; #endregion:GetStdStreams_WithInput (685341990)
+; #endregion:GetStdStreams_WithInputv2 (1696729278)

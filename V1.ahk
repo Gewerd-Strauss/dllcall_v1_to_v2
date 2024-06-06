@@ -21,11 +21,11 @@
 ; #endregion:Description
 
 ; #region:Example
-if GetStdStreams_WithInput(A_ComSpec " /C ping 127.0.0.1 -n 9",, io) {
-    msgbox % io
-} else {
-    msgbox % "command failed"
-}
+; if GetStdStreams_WithInput(A_ComSpec " /C ping 127.0.0.1 -n 9",, io) {
+; msgbox, % io "`n" e
+; } else {
+; msgbox, % "command failed"
+; }
 ; 
 ; #endregion:Example
 
@@ -85,3 +85,5 @@ GetStdStreams_WithInput(CommandLine, WorkDir := "", ByRef InOut := "") {
 ; #endregion:Code
 
 
+
+; #endregion:GetStdStreams_WithInput (685341990)
